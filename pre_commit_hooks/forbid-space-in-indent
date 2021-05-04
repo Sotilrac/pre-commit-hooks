@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -eu
 
 ################################################################################
@@ -10,8 +10,21 @@ if [ "${DEBUG}" != unset ]; then
   set -x
 fi
 
-if grep -El '^ ' "$@"; then
-  echo
-  echo 'Found space(s) within indentation in the above file(s).'
-  exit 1
+files_with_spaces_found=0
+grep_params="-El"
+if [[ "$1" = "-v" ]]; then
+  # Verbose mode
+  grep_params="-En"
+  echo Verbose
+  shift
 fi
+
+for file in "$@"; do
+  if grep "$grep_params" '^ ' "$file"; then
+    echo "Found space(s) within indentation in $file."
+    echo
+    files_with_spaces_found=$((files_with_spaces_found+1))
+  fi
+done
+
+exit $files_with_spaces_found
